@@ -55,7 +55,7 @@ function Modal({ setOpenModal }) {
           </div>
         </div>
 
-        {/* <div className="profile-stats">
+        <div className="profile-stats">
           <div className="stat-content-modal">
             <h3 className="stat-head-modal">943</h3>
             <p className="stat-para-modal">Posts</p>
@@ -68,7 +68,7 @@ function Modal({ setOpenModal }) {
             <h3 className="stat-head-modal">242K</h3>
             <p className="stat-para-modal">Followers</p>
           </div>
-        </div> */}
+        </div>
 
         <div className="profile-about">
           {/* <p className="about-para">
