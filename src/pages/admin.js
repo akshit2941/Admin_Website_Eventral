@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import './admin.css'
 import Navbar from '../components/Navbar/Navbar';
-// import { db } from '../components/firebase/firebase';
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getFirestore, collection, getDocs, doc, setDoc } from "firebase/firestore";
+import DefaultEventral from '../images/DefaultEventral.png';
 // import { data } from 'autoprefixer';
 
 function AdminPage() {
     const [artistData, setArtistData] = useState([]);
     const [UserData, setUserData] = useState([]);
-    const favouriteArtists = UserData.flatMap((user) => user['Following'] || []);
-    const requestedArtists = UserData.flatMap((user) => user['Requested'] || []);
+    // const favouriteArtists = UserData.flatMap((user) => user['Following'] || []);
+    // const requestedArtists = UserData.flatMap((user) => user['Requested'] || []);
 
+    const [followingCounts, setFollowingCounts] = useState([]);
 
     const db = getFirestore();
     const colRef = collection(db, 'artists');
@@ -38,6 +39,48 @@ function AdminPage() {
         }
     };
 
+    const processFollowingData = async (userData) => {
+        try {
+            userData.forEach(user => {
+                console.log("Following:", user.Following);
+            });
+
+            const allFollowing = userData.flatMap(user => user.Following || []);
+
+            console.log("Combined Following data with duplicates:", allFollowing);
+
+            const uniqueFollowing = Array.from(new Set(allFollowing));
+
+            console.log("Combined Following data without duplicates:", uniqueFollowing);
+
+            const countMap = allFollowing.reduce((acc, curr) => {
+                acc[curr] = (acc[curr] || 0) + 1;
+                return acc;
+            }, {});
+
+            const countArray = Object.entries(countMap).map(([element, count]) => ({
+                element,
+                count
+            }));
+
+            console.log("Element counts:", countArray);
+
+
+            // Transfer countArray data to Firestore
+            const countCollectionRef = collection(db, 'FollowerData');
+            const docRef = doc(countCollectionRef);
+            await setDoc(docRef, {
+                data: countArray
+            });
+
+            setFollowingCounts(countArray);
+
+            return countArray;
+        } catch (error) {
+            console.error('Error processing following data:', error);
+        }
+    };
+
 
 
     useEffect(() => {
@@ -46,36 +89,8 @@ function AdminPage() {
                 await getArtistData();
                 await getUserData();
 
-                console.log("Following data for each user:");
-                UserData.forEach(user => {
-                    console.log("Following:", user.Following);
-                });
+                await processFollowingData(UserData);
 
-                const allFollowing = UserData.flatMap(user => user.Following || []);
-
-                // Print the combined "Following" data with duplicates
-                console.log("Combined Following data with duplicates:", allFollowing);
-
-                // Alternatively, if you want to remove duplicates, you can use a Set
-                const uniqueFollowing = Array.from(new Set(allFollowing));
-
-                // Print the combined "Following" data without duplicates
-                console.log("Combined Following data without duplicates:", uniqueFollowing);
-
-                // Count the occurrences of each element
-                const countMap = allFollowing.reduce((acc, curr) => {
-                    acc[curr] = (acc[curr] || 0) + 1;
-                    return acc;
-                }, {});
-
-                // Convert the count map into an array of objects
-                const countArray = Object.entries(countMap).map(([element, count]) => ({
-                    element,
-                    count
-                }));
-
-                // Print the array with element counts
-                console.log("Element counts:", countArray);
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -84,12 +99,6 @@ function AdminPage() {
 
         fetchData();
     }, []);
-
-    // console.log("This is UseLess");
-    // console.log(artistFollowCounts);
-
-    // console.log(artistData); 
-    // console.log(UserData);
 
 
     return (
@@ -126,20 +135,9 @@ function AdminPage() {
                     <div className='user-group'>
                         {UserData.map((user, index) => (
                             <div className="user-data" key={index}>
+                                <p className="user-body"><img src={user.photoUrl || DefaultEventral} alt="Artist" width="100" height="100" style={{ borderRadius: '50px', width: '125px' }} /></p>
                                 <h1 className="user-title">{user.displayName}</h1>
                                 <p className="user-body">{user.email}</p>
-                                <p>Artist And There Followers:</p>
-                                <p>
-                                    {favouriteArtists.map((user, index) => (
-                                        <li key={index}>{user}</li>
-                                    ))}
-                                </p>
-                                <p>Requested:</p>
-                                <p>
-                                    {requestedArtists.map((user, index) => (
-                                        <li key={index}>{user}</li>
-                                    ))}
-                                </p>
                             </div>
                         ))}
                     </div>
@@ -161,10 +159,8 @@ function AdminPage() {
                         {artistData.map((artist, index) => (
                             <div className="artist-data" key={index}>
                                 <h1 className="artist-title">{artist.displayName}</h1>
-                                <p className="user-body"><img src={artist.photoUrl} alt="Artist" width="100" height="100" style={{ borderRadius: '50px' }} /></p>
+                                <p className="user-body"><img src={artist.photoUrl || DefaultEventral} alt="Artist" width="100" height="100" style={{ borderRadius: '50px', width: '125px' }} /></p>
                                 <p className="artist-para">{artist.email}</p>
-                                <p className="artist-para">Favourite Artists</p>
-                                <p className="artist-para">Favourite Genre</p>
                             </div>
                         ))}
                     </div>
@@ -176,19 +172,15 @@ function AdminPage() {
 
                 <div className='artists'>
                     <h1 className="user-head">
-                        Artist & Followers
+                        Artist On The Board!
                     </h1>
-                    <div className='artist-body'>
-                        <p>
-                            {favouriteArtists.map((user, index) => (
-                                <li key={index}>{user}</li>
+                    <div className='artist-follower-data-div'>
+                        <p className='follower-main'>
+                            {followingCounts.map(({ element, count }) => (
+                                <p className='follower-para' key={element}>{`${element}: ${count}`}</p>
                             ))}
                         </p>
-                        {/* <p>
-                            {requestedArtists.map((user, index) => (
-                                <li key={index}>{user}</li>
-                            ))}
-                        </p> */}
+                        See More
                     </div>
 
                 </div>

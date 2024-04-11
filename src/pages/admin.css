@@ -76,6 +76,7 @@ body {
     margin-top: 20px;
     padding: 15px;
     justify-content: center;
+    align-items: center;
 }
 
 .user-title {
@@ -113,6 +114,7 @@ body {
     margin-top: 20px;
     padding: 15px;
     justify-content: center;
+    align-items: center;
 }
 
 .artist-head {
@@ -164,4 +166,18 @@ td {
 .table-main {
     font-weight: 700;
 
+}
+
+
+.follower-main {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.follower-para {
+    font-size: 25px;
+    margin: 5px;
+    border: 2px solid #d4d4d4;
+    border-radius: 23px;
+    padding: 7px;
 }
