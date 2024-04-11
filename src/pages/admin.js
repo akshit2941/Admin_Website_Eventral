@@ -8,10 +8,15 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
 function AdminPage() {
     const [artistData, setArtistData] = useState([]);
     const [UserData, setUserData] = useState([]);
+    const favouriteArtists = UserData.flatMap((user) => user['Following'] || []);
+    const requestedArtists = UserData.flatMap((user) => user['Requested'] || []);
+
 
     const db = getFirestore();
     const colRef = collection(db, 'artists');
     const colRefUser = collection(db, 'users');
+
+
 
     const getArtistData = async () => {
         try {
@@ -33,21 +38,58 @@ function AdminPage() {
         }
     };
 
+
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 await getArtistData();
                 await getUserData();
+
+                console.log("Following data for each user:");
+                UserData.forEach(user => {
+                    console.log("Following:", user.Following);
+                });
+
+                const allFollowing = UserData.flatMap(user => user.Following || []);
+
+                // Print the combined "Following" data with duplicates
+                console.log("Combined Following data with duplicates:", allFollowing);
+
+                // Alternatively, if you want to remove duplicates, you can use a Set
+                const uniqueFollowing = Array.from(new Set(allFollowing));
+
+                // Print the combined "Following" data without duplicates
+                console.log("Combined Following data without duplicates:", uniqueFollowing);
+
+                // Count the occurrences of each element
+                const countMap = allFollowing.reduce((acc, curr) => {
+                    acc[curr] = (acc[curr] || 0) + 1;
+                    return acc;
+                }, {});
+
+                // Convert the count map into an array of objects
+                const countArray = Object.entries(countMap).map(([element, count]) => ({
+                    element,
+                    count
+                }));
+
+                // Print the array with element counts
+                console.log("Element counts:", countArray);
+
             } catch (error) {
-                console.error('Error fetching artist data:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
         fetchData();
     }, []);
 
-    console.log(artistData);
-    console.log(UserData);
+    // console.log("This is UseLess");
+    // console.log(artistFollowCounts);
+
+    // console.log(artistData); 
+    // console.log(UserData);
 
 
     return (
@@ -82,13 +124,22 @@ function AdminPage() {
 
 
                     <div className='user-group'>
-                        {UserData.map((users, index) => (
+                        {UserData.map((user, index) => (
                             <div className="user-data" key={index}>
-                                <h1 className="user-title">{users.displayName}</h1>
-                                <p className="user-body">{users.email}</p>
-                                <p className="user-body"><img src={users.photoUrl} alt="Artist" width="100" height="100" style={{ borderRadius: '50px' }} /></p>
-                                <p className="user-body">Favourite Artists</p>
-                                <p className="user-body">Favourite Genre</p>
+                                <h1 className="user-title">{user.displayName}</h1>
+                                <p className="user-body">{user.email}</p>
+                                <p>Artist And There Followers:</p>
+                                <p>
+                                    {favouriteArtists.map((user, index) => (
+                                        <li key={index}>{user}</li>
+                                    ))}
+                                </p>
+                                <p>Requested:</p>
+                                <p>
+                                    {requestedArtists.map((user, index) => (
+                                        <li key={index}>{user}</li>
+                                    ))}
+                                </p>
                             </div>
                         ))}
                     </div>
@@ -110,7 +161,7 @@ function AdminPage() {
                         {artistData.map((artist, index) => (
                             <div className="artist-data" key={index}>
                                 <h1 className="artist-title">{artist.displayName}</h1>
-                                <p className="user-body"><img src={artist.photoUrl} alt="Artist" width="100" height="100" style={{ borderRadius: '50px' }}/></p>
+                                <p className="user-body"><img src={artist.photoUrl} alt="Artist" width="100" height="100" style={{ borderRadius: '50px' }} /></p>
                                 <p className="artist-para">{artist.email}</p>
                                 <p className="artist-para">Favourite Artists</p>
                                 <p className="artist-para">Favourite Genre</p>
@@ -121,6 +172,25 @@ function AdminPage() {
                     <p className="text-grey">
                         See More
                     </p>
+                </div>
+
+                <div className='artists'>
+                    <h1 className="user-head">
+                        Artist & Followers
+                    </h1>
+                    <div className='artist-body'>
+                        <p>
+                            {favouriteArtists.map((user, index) => (
+                                <li key={index}>{user}</li>
+                            ))}
+                        </p>
+                        {/* <p>
+                            {requestedArtists.map((user, index) => (
+                                <li key={index}>{user}</li>
+                            ))}
+                        </p> */}
+                    </div>
+
                 </div>
 
                 <div className="events">
@@ -215,7 +285,7 @@ function AdminPage() {
                         </table>
                     </div>
                 </div>
-            </div>
+            </div >
 
         </>
     );

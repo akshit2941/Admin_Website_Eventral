@@ -11,6 +11,10 @@ function Navbar() {
     const [modalOpen, setModalOpen] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState(null);
 
+    const handleReload = () => {
+        window.location.reload();
+    };
+
     useEffect(() => {
         // Check if user is already signed in
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -35,8 +39,8 @@ function Navbar() {
             <div className="logo">Eventral</div>
             <nav className="navbar">
                 <Link to="#" className='navbar-elements'>Home</Link>
-                <Link to="/dashboard" className='navbar-elements'>Notifications</Link>
-                <Link to="/dashboard" className='navbar-elements'>Messages</Link>
+                <Link to="#" className='navbar-elements' onClick={handleReload}>Notifications</Link>
+                <Link to="#" className='navbar-elements' onClick={handleReload}>Messages</Link>
                 <div className='nav-btn'>
                     <button className='btn-new' onClick={doSignOut}>
                         Logout
